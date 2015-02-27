@@ -288,7 +288,7 @@
     */
     realizeTransform: function(object) {
       this._moveFlippedObject(object);
-      this._restoreObjectState(object);
+      this._setObjectPosition(object);
       return object;
     },
     /**
