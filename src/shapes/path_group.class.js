@@ -76,23 +76,20 @@
         return;
       }
 
-      ctx.save();
-
-      var m = this.transformMatrix;
-
-      if (m) {
-        ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
-      }
-      this.transform(ctx);
-
-      this._setShadow(ctx);
-      this.clipTo && fabric.util.clipContext(this, ctx);
       for (var i = 0, l = this.paths.length; i < l; ++i) {
+        ctx.save();
+
+        var m = this.transformMatrix;
+
+        if (m) {
+          ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        }
+        this.transform(ctx);
+
         this.paths[i].render(ctx, true);
+
+        ctx.restore();
       }
-      this.clipTo && ctx.restore();
-      this._removeShadow(ctx);
-      ctx.restore();
     },
 
     /**
