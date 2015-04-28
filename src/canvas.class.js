@@ -168,6 +168,15 @@
     perPixelTargetFind:     false,
 
     /**
+     * Determines the algorithm perPixelTargetFind uses to decide if a point matches
+     * if perPixelTargetFind is false, has no effect.
+     * if 'simple', then a target matches if the pixel that was clicked on was not transparent
+     * if 'enclosed', then a target matches if the pixel that was clicked is enclosed by the shape.
+     * @default
+     */
+    perPixelTargetFindMode: 'simple',
+
+    /**
      * Number of pixels around target pixel to tolerate (consider active) during object detection
      * @type Number
      * @default
@@ -289,14 +298,26 @@
      */
     isTargetTransparent: function (target, x, y) {
       var hasBorders = target.hasBorders,
-          transparentCorners = target.transparentCorners;
+          transparentCorners = target.transparentCorners,
+          opacity = target.opacity,
+          fill = target.fill,
+          strokeWidth = target.strokeWidth;
 
       target.hasBorders = target.transparentCorners = false;
+      target.set('strokeWidth', target.strokeWidth + 10);
+      if (this.perPixelTargetFindMode === 'enclosed') {
+        console.log('enclosed!');
+        target.set('opacity', 1);
+        target.set('fill', 'rgb(0, 0, 0)');
+      }
 
       this._draw(this.contextCache, target);
 
       target.hasBorders = hasBorders;
       target.transparentCorners = transparentCorners;
+      target.set('opacity', opacity);
+      target.set('fill', fill);
+      target.set('strokeWidth', strokeWidth);
 
       var isTransparent = fabric.util.isTransparent(
         this.contextCache, x, y, this.targetFindTolerance);
@@ -305,6 +326,52 @@
 
       return isTransparent;
     },
+
+    /*isPointEnclosedByShape: function (target, pointerX, pointerY) {
+      var hasBorders = target.hasBorders,
+          transparentCorners = target.transparentCorners;
+
+      target.hasBorders = target.transparentCorners = false;
+
+
+      this._draw(this.contextCache, target);
+
+      target.hasBorders = hasBorders;
+      target.transparentCorners = transparentCorners;
+
+      var rect = target.getBoundingRect(),
+        imageData = this.contextCache.getImageData(rect.left, rect.top, rect.width, rect.height),
+        transparencyMap = new Uint8Array(imageData.width * imageData.height);
+
+      for (var imageDataY = 0; imageDataY < rect.height * 4; imageDataY += 4) {
+        for (var imageDataX = 0; imageDataX < rect.width * 4; imageDataX += 4) {
+          //imageData is in RGBA order, so 4th value of this pixel is alpha channel
+          var isTransparent = imageDatap[imageDataY * rect.width + imageDataX + 3] === 0;
+          transparencyMap[(imageDataY * rect.width) / 4 + imageDataX / 4] = isTransparent;
+        }
+      }
+
+      var isPointTransparent = function(x, y) {
+        return !!transparencyMap[rect.width * y + x];
+      };
+
+      var floodFill = function floodFill(curX, curY) {
+        if (!isPointTransparent(curX, curY)) {
+          return null;
+        }
+        if (curX === 0 || curY === 0 || curX >= (rect.width - 1) || curY >= (rect.height - 1)) {
+          return true;
+        } else {
+          return floodFill(curX - 1, curY) || floodFill(curX + 1, curY) || floodFill(curX, curY - 1) || floodFill(curX, curY + 1);
+        }
+      }
+
+      var didReachEnd = floodFill(pointerX / this.getZoom() - rect.left, pointerY / this.getZoom() - rect.height);
+
+
+
+      this.clearContext(this.contextCache);
+    },*/
 
     /**
      * @private

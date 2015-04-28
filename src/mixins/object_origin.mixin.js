@@ -141,6 +141,20 @@
         .subtractEquals(new fabric.Point(x, y));
     },
 
+    toLocalPointIncludingGroup: function(point, originX, originY) {
+      var pt = point;
+      console.log('point1', pt.x, pt.y);
+      if (this.group) {
+        pt = this.group.toLocalPoint(pt, this.originX, this.originY);
+        pt.x /= this.group.scaleX;
+        pt.y /= this.group.scaleY;
+        console.log('point2', pt.x, pt.y);
+      }
+      pt = this.toLocalPoint(pt, originX, originY);
+      console.log('point3', pt.x, pt.y);
+      return pt;
+    },
+
     /**
      * Returns the point in global coordinates
      * @param {fabric.Point} The point relative to the local coordinate system

@@ -519,7 +519,17 @@
         }
         return this[prop];
       }
-    }
+    },
+
+    visibleAreaClipsWithRect: function(pointTL, pointBR) {
+      for (var objectIndex = 0; objectIndex < this._objects.length; objectIndex++) {
+        var object = this._objects[objectIndex];
+        if (object.visibleAreaClipsWithRect && object.visibleAreaClipsWithRect(pointTL, pointBR)) {
+          return true;
+        }
+      }
+      return false;
+    },
   });
 
   /**

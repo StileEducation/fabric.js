@@ -156,11 +156,19 @@
           continue;
         }
 
-        if (currentObject.intersectsWithRect(selectionX1Y1, selectionX2Y2) ||
+        var shouldSelect = false;
+        if ((currentObject.perPixelTargetFind || this.perPixelTargetFind) && currentObject.visibleAreaClipsWithRect) {
+          var scaledX1Y1 = selectionX1Y1.multiply(this.getZoom()),
+            scaledX2Y2 = selectionX2Y2.multiply(this.getZoom());
+          shouldSelect = currentObject.visibleAreaClipsWithRect(scaledX1Y1, scaledX2Y2);
+        } else {
+          shouldSelect = currentObject.intersectsWithRect(selectionX1Y1, selectionX2Y2) ||
             currentObject.isContainedWithinRect(selectionX1Y1, selectionX2Y2) ||
             currentObject.containsPoint(selectionX1Y1) ||
-            currentObject.containsPoint(selectionX2Y2)
-        ) {
+            currentObject.containsPoint(selectionX2Y2);
+        }
+
+        if (shouldSelect) {
           currentObject.set('active', true);
           group.push(currentObject);
 

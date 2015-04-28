@@ -216,7 +216,95 @@
      */
     complexity: function() {
       return 1;
-    }
+    },
+
+    //Returns true if there exists a visible part of this ellipse that clips with the rectangle
+    //The rectangle is specified in canvas-relative coordinates, with x/y describing the top-left
+    //of the rect.
+    //True if:
+    //All four corners of rect are inside the ellipse, and the fill is not transparent
+    //Between 1 and 3 corners of the rect are inside the ellipse
+    //There exists a pair of corners of the rect which are in different quadrants & the line between
+    //them goes through the ellipse
+    //The ellipse's bounding box is completley contained by the rect
+    visibleAreaClipsWithRect: function(pointTL, pointTR) {
+      var rect = {
+        x: pointTL.x,
+        y: pointTL.y,
+        width: pointTR.x - pointTL.x,
+        height: pointTR.y - pointTL.y,
+      };
+      /*var localPoints = {
+        topLeft: new fabric.Point(rect.x, rect.y),
+        topRight: new fabric.Point(rect.x + rect.width, rect.y),
+        bottomLeft: new fabric.Point(rect.x, rect.y + rect.height),
+        bottomRight: new fabric.Point(rect.x + rect.width, rect.y + rect.height),
+      };
+      if (this.group) {
+        localPoints.topLeft = this.group.toLocalPoint(localPoints.topLeft, 'center', 'center');
+        localPoints.topRight = this.group.toLocalPoint(localPoints.topRight, 'center', 'center');
+        localPoints.bottomLeft = this.group.toLocalPoint(localPoints.bottomLeft, 'center', 'center');
+        localPoints.bottomRight = this.group.toLocalPoint(localPoints.bottomL)
+      }*/
+      var localPoints = {
+        topLeft: this.toLocalPointIncludingGroup(new fabric.Point(rect.x, rect.y), 'center', 'center'),
+        topRight: this.toLocalPointIncludingGroup(new fabric.Point(rect.x + rect.width, rect.y), 'center', 'center'),
+        bottomLeft: this.toLocalPointIncludingGroup(new fabric.Point(rect.x, rect.y + rect.height), 'center', 'center'),
+        bottomRight: this.toLocalPointIncludingGroup(new fabric.Point(rect.x + rect.width, rect.y + rect.height), 'center', 'center'),
+      };
+      if (this.group) {
+
+      }
+      console.log('rect', rect);
+      console.log('localPoints', localPoints);
+      var pointIsInEllipse = function(point) {
+        //(x/a)^2 + (y/b)^2 <= 1, the general ellipse equation
+        var is = Math.pow(point.x /this.rx, 2) + Math.pow(point.y / this.ry, 2) <= 1;
+        console.log('is', point.x, point.y, 'in ellipse?', is);
+        return is;
+      }.bind(this);
+      var sign = function(val) {
+        if (val === 0) {
+          return 0;
+        } else {
+          return val > 0 ? 1 : -1;
+        }
+      };
+      var verticalOrHorizontalLineIntersectsEllipse = function(p1, p2) {
+        if (p1.x === p2.x) {
+          //vertical line
+          return p1.x <= this.width / 2 && p1.y >= -this.width / 2 && sign(p1.y) !== sign(p2.y);
+        } else {
+          //horizontal line
+          return p1.y <= this.height / 2 && p1.y >= -this.height / 2 && sign(p1.x) !== sign(p2.x);
+        }
+      }.bind(this);
+
+      var localPointArray = [localPoints.topLeft, localPoints.topRight, localPoints.bottomLeft, localPoints.bottomRight];
+      var numPointsInEllipse = 0;
+      localPointArray.forEach(function(point){
+        if (pointIsInEllipse(point)) {
+          point.isInEllipse = true;
+          numPointsInEllipse++;
+        }
+      });
+
+      if (numPointsInEllipse >= 1 && numPointsInEllipse <= 3) {
+        return true;
+      } else if (numPointsInEllipse === 4) {
+        return !!this.fill; //return true as long as we're not transparent
+      } else {
+        //No point inside the ellipse.
+        if (this.isContainedWithinRect(pointTL, pointTR)) {
+          return true;
+        } else {
+          return verticalOrHorizontalLineIntersectsEllipse(localPoints.topLeft, localPoints.topRight) ||
+            verticalOrHorizontalLineIntersectsEllipse(localPoints.topRight, localPoints.bottomRight) ||
+            verticalOrHorizontalLineIntersectsEllipse(localPoints.bottomRight, localPoints.bottomLeft) ||
+            verticalOrHorizontalLineIntersectsEllipse(localPoints.bottomLeft, localPoints.topLeft);
+        }
+      }
+    },
   });
 
   /* _FROM_SVG_START_ */

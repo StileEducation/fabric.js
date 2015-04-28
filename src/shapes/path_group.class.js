@@ -226,7 +226,17 @@
      */
     getObjects: function() {
       return this.paths;
-    }
+    },
+
+    visibleAreaClipsWithRect: function(pointTL, pointBR) {
+      for (var pathIndex = 0; pathIndex < this.paths.length; pathIndex++) {
+        var path = this.paths[pathIndex];
+        if (path.visibleAreaClipsWithRect && path.visibleAreaClipsWithRect(pointTL, pointBR)) {
+          return true;
+        }
+      }
+      return false;
+    },
   });
 
   /**
