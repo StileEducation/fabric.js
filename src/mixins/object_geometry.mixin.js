@@ -99,6 +99,19 @@
       return (xPoints !== 0 && xPoints % 2 === 1);
     },
 
+    containsRect: function(pointTL, pointBR) {
+      var boundingRect = this.getBoundingRect();
+      var thisTL = new fabric.Point(boundingRect.left, boundingRect.top);
+      var thisBR = new fabric.Point(boundingRect.left + boundingRect.width, boundingRect.top + boundingRect.height);
+
+      return (
+        pointTL.x >= thisTL.x &&
+        pointBR.x <= thisBR.x &&
+        pointTL.y >= thisTL.y &&
+        pointBR.y <= thisBR.y
+      );
+
+    },
     /**
      * Method that returns an object with the object edges in it, given the coordinates of the corners
      * @private
